@@ -47,7 +47,7 @@ class Frog(Sprite):
             self.source = src
             if self.y > Window.size[1]:
                 self.place()
-                Game.score -= 1
+                FroggyApp.score -= 1
         else:
             src = self.atlas + "_dead"
             self.source = src
@@ -60,22 +60,17 @@ class Frog(Sprite):
         if self.collide_point(*touch.pos) and self.alive:
             self.alive = False
             Clock.schedule_once(self.revive, 1)
-            Game.score += 1
+            FroggyApp.score += 1
 
     def revive(self, _):
         self.alive = True
         self.place()
 
 
-class Game(Widget):
-    """
-    Playable level. Loads in Frogs and runs game logic.
-    """
-    score = 0
+class FroggyGame(Widget):
 
     def __init__(self):
-        super(Game, self).__init__()
-        Clock.schedule_interval(self.update, 1.0/60.0)
+        super(FroggyGame, self).__init__()
         self.frogs = []
         for frog in range(4):
             frog = Frog()
@@ -87,58 +82,19 @@ class Game(Widget):
             frog.update(dt)
 
 
-class Home(Widget):
-    """
-    Home screen.
-    """
-
-    def __init__(self):
-        super(Home, self).__init__()
-        frog_image = Sprite(source='images/froglilypad.png')
-        pos = (int(Window.size[0]/2) - int(frog_image.width/2), 0)
-        frog_image.pos = pos
-        self.add_widget(frog_image)
-
-
-class FroggyRoot(BoxLayout):
-    """
-    Application base, contains screens to swap.
-    """
-    game_screen = ObjectProperty(Game())
-    home_screen = ObjectProperty(Home())
-    current_screen = "game"
-
-    def on_start(self):
-        self.go_home()
-
-    def show_game(self):
-        self.clear_widgets()
-        self.add_widget(self.game_screen)
-        self.current_screen = "game"
-
-    def go_home(self):
-        self.clear_widgets()
-        self.add_widget(self.home_screen)
-        self.current_screen = "home"
-
-    def on_touch_down(self, touch):
-        if self.current_screen == "home":
-            self.show_game()
-        else:
-            return super(FroggyRoot, self).on_touch_down(touch)
-
-
 class FroggyApp(App):
     """
     Kivy base App class.
     """
+    score = 0
+    game = None
 
     def build(self):
-        self.screen = FroggyRoot()
-        return self.screen
+        self.game = FroggyGame()
+        return self.game
 
     def on_start(self):
-        self.screen.go_home()
+        Clock.schedule_interval(self.game.update, 1.0 / 60.0)
 
 if __name__ == "__main__":
     Window.clearcolor = get_color_from_hex('#00bcd4')
