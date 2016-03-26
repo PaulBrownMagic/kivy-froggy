@@ -3,13 +3,14 @@ from kivy.animation import Animation
 from kivy.clock import Clock
 from kivy.core.text import LabelBase
 from kivy.core.window import Window
-from kivy.properties import ObjectProperty, StringProperty, NumericProperty
-from kivy.uix.boxlayout import BoxLayout
+from kivy.lang import Builder
 from kivy.uix.image import Image
+from kivy.uix.screenmanager import ScreenManager, Screen, WipeTransition
 from kivy.uix.widget import Widget
 from kivy.utils import get_color_from_hex
 from random import randint
 
+Builder.load_file('froggy.kv')
 
 class Sprite(Image):
     """
@@ -74,10 +75,10 @@ class Ripple(Sprite):
 
 
 class FroggyGame(Widget):
-    frogs = []
 
     def __init__(self):
         super(FroggyGame, self).__init__()
+        self.frogs = []
         for frog in range(4):
             frog = Frog()
             self.frogs.append(frog)
@@ -86,6 +87,7 @@ class FroggyGame(Widget):
     def update(self, dt):
         for frog in self.frogs:
             frog.update(dt)
+        self.score_lbl.text = str(FroggyApp.score)
 
     def on_touch_down(self, touch):
         if Widget.on_touch_down(self, touch):
@@ -95,22 +97,48 @@ class FroggyGame(Widget):
         ripple.animation.start(ripple)
 
 
+class FroggyScreen(Screen):
+    game_over = True
+
+    def on_enter(self, *args):
+        super(FroggyScreen, self).on_enter(*args)
+        Clock.schedule_once(self.game_start, 0.5)
+
+    def game_start(self, _):
+        if self.game_over:
+            FroggyApp.score = 0
+            self.game = FroggyGame()
+            self.add_widget(self.game)
+            self.game_over = False
+            Clock.schedule_interval(self.update, 1.0 / 60.0)
+
+    def update(self, dt):
+        self.game.update(dt)
+        if FroggyApp.score < 0:
+            self.manager.current = 'home'
+
+    def on_leave(self, *args):
+        self.game_over = True
+        if self.game:
+            self.game.clear_widgets()
+            Clock.unschedule(self.update)
+
+
+class HomeScreen(Screen):
+    pass
+
+
 class FroggyApp(App):
     """
     Kivy base App class.
     """
     score = 0
 
-    def on_build(self):
-        self.game = FroggyGame()
-        return self.game
-
-    def on_start(self):
-        Clock.schedule_interval(self.update, 1.0 / 60.0)
-
-    def update(self, dt):
-        self.root.score_lbl.text = str(self.score)
-        self.root.update(dt)
+    def build(self):
+        root = ScreenManager(transition=WipeTransition())
+        root.add_widget(HomeScreen(name='home'))
+        root.add_widget(FroggyScreen(name='froggy'))
+        return root
 
 
 if __name__ == "__main__":
