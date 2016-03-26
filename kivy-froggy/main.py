@@ -28,15 +28,16 @@ class Frog(Sprite):
     """
 
     def __init__(self):
-        super(Frog, self).__init__(source="atlas://images/froggy_atlas/frog1", pos=(randint(0, 400), 0))
+        super(Frog, self).__init__(source="atlas://images/froggy_atlas/frog1", allow_stretch=True, pos=(randint(0, 400), 0))
         self.place()
         self.frame = 1
         self.atlas = "atlas://images/froggy_atlas/frog"
         self.alive = True
+        self.size = ('116dp', '174dp')
 
     def update(self, dt):
         if self.alive:
-            self.y += 500 * dt
+            self.y += Window.height * dt * 1.68
             self.frame = self.frame + 1 if self.frame < 17 else 1
             src = self.atlas + str(int(self.frame/2))
             self.source = src
@@ -61,7 +62,7 @@ class Frog(Sprite):
             return True
 
     def revive(self, *_):
-        self.size = (116, 172)
+        self.size = ('116dp', '174dp')
         self.alive = True
         self.place()
 
@@ -71,13 +72,13 @@ class Ripple(Sprite):
     def __init__(self, touch):
         super(Ripple, self).__init__(source="images/ripple.png", pos=touch.pos)
         self.size = (10, 10)
-        self.animation = Animation(size=(80, 80), center=touch.pos, opacity=0, t='out_sine')
+        self.animation = Animation(size=(150, 150), center=touch.pos, opacity=0, t='out_sine')
 
 
 class FroggyGame(Widget):
+    frogs = []
 
-    def __init__(self):
-        super(FroggyGame, self).__init__()
+    def get_frogs(self, _):
         self.frogs = []
         for frog in range(4):
             frog = Frog()
@@ -87,7 +88,10 @@ class FroggyGame(Widget):
     def update(self, dt):
         for frog in self.frogs:
             frog.update(dt)
-        self.score_lbl.text = str(FroggyApp.score)
+        if FroggyApp.score >= 0:
+            self.score_lbl.text = str(FroggyApp.score)
+        else:
+            self.score_lbl.txt = "X"
 
     def on_touch_down(self, touch):
         if Widget.on_touch_down(self, touch):
@@ -102,7 +106,7 @@ class FroggyScreen(Screen):
 
     def on_enter(self, *args):
         super(FroggyScreen, self).on_enter(*args)
-        Clock.schedule_once(self.game_start, 0.5)
+        Clock.schedule_once(self.game_start, 0.2)
 
     def game_start(self, _):
         if self.game_over:
@@ -110,12 +114,17 @@ class FroggyScreen(Screen):
             self.game = FroggyGame()
             self.add_widget(self.game)
             self.game_over = False
+            Clock.schedule_once(self.game.get_frogs, 1)
             Clock.schedule_interval(self.update, 1.0 / 60.0)
 
     def update(self, dt):
         self.game.update(dt)
         if FroggyApp.score < 0:
             self.manager.current = 'home'
+
+    def on_pre_leave(self, *args):
+        if self.game:
+            self.game.clear_widgets(children=self.game.frogs)
 
     def on_leave(self, *args):
         self.game_over = True
@@ -135,7 +144,7 @@ class FroggyApp(App):
     score = 0
 
     def build(self):
-        root = ScreenManager(transition=WipeTransition())
+        root = ScreenManager(transition=WipeTransition(duration=1))
         root.add_widget(HomeScreen(name='home'))
         root.add_widget(FroggyScreen(name='froggy'))
         return root
