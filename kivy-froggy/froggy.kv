@@ -1,13 +1,25 @@
 #:import C kivy.utils.get_color_from_hex
 
 <FroggyGame>:
+    canvas.before:
+        Color:
+            rgba: C('#00BCD4')
+        Rectangle:
+            pos: self.pos
+            size: self.size
     score_lbl: score
-    Label:
+    TitleLabel:
         id: score
         text: ""
         center_x: root.center_x
         top: root.top - self.height - 10
 <HomeScreen>:
+    canvas.before:
+        Color:
+            rgba: C('#00BCD4')
+        Rectangle:
+            pos: self.pos
+            size: self.size
     BoxLayout:
         orientation: 'vertical'
         Sprite:
@@ -19,14 +31,44 @@
             size_hint_y: 1
             on_release: root.manager.current = 'froggy'
 
+<SummaryScreen>:
+    canvas.before:
+        Color:
+            rgba: C('#004A4D44')
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    BoxLayout:
+        orientation: 'vertical'
+        TitleLabel:
+            text:"Game OVER!"
+            size_hint_y: 2
+        Label:
+            id: captured
+            text: ""
+        Label:
+            id: max_score
+            text: ""
+        BoxLayout:
+            size_hint_y: 1
+            Button:
+                text: 'Play Again!'
+                on_release: root.manager.current = 'froggy'
+            Button:
+                text: 'Home'
+                on_release: root.manager.current = 'home'
+
+
 <Label>:
-    font_size: '85sp'
+    font_size: '65sp'
     font_name: 'd-puntillas'
     color: C('#64DD17')
+    size_hint_y: 1
+<TitleLabel@Label>:
+    font_size: '85sp'
 <Button>:
-    valign: 'top'
-    font_size: '65sp'
     background_color: C('#006064')
     background_normal: 'images/button_normal.png'
     background_down: 'images/button_down.png'
-    border: (0, 0, 4, 0)
+    border: (0, 3, 2, 3)

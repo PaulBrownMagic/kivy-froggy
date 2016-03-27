@@ -1,0 +1,24 @@
+<musicloops>
+<sound>
+    <title>sounds/170255__dublie__trumpet.wav</title>
+    <url>https://www.freesound.org/people/Dublie/sounds/170255/</url>
+    <license>CC0 1.0 Universal (CC0 1.0)</license>
+    <license_url>http://creativecommons.org/publicdomain/zero/1.0/</license_url>
+</sound>
+<sound>
+    <title>sounds/16167__visual__industrial-wack8.wav</title>
+    <url>https://www.freesound.org/people/visual/sounds/16167/</url>
+    <license>CC0 1.0 Universal (CC0 1.0)</license>
+    <license_url>http://creativecommons.org/publicdomain/zero/1.0/</license_url>
+</sound>
+</musicloops>
+<sfx>
+    <sound>
+        <title>sounds/262301__boulderbuff64__tongue-click.wav</title>
+        <url>https://www.freesound.org/people/boulderbuff64/sounds/262301/</url>
+        <license>CC0 1.0 Universal (CC0 1.0)</license>
+        <license_url>http://creativecommons.org/publicdomain/zero/1.0/</license_url>
+    </sound>
+    <sound>catch.wav && going_up.wav && splash.wav</sound>
+    <details>All made with http://www.bfxr.net/</details>
+</sfx>

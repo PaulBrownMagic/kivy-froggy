@@ -1,6 +1,7 @@
 from kivy.app import App
 from kivy.animation import Animation
 from kivy.clock import Clock
+from kivy.core.audio import SoundLoader
 from kivy.core.text import LabelBase
 from kivy.core.window import Window
 from kivy.lang import Builder
@@ -26,6 +27,7 @@ class Frog(Sprite):
     """
     Frog inherits from Sprite. Animated game character.
     """
+    caught = SoundLoader.load('sounds/catch.wav')
 
     def __init__(self):
         super(Frog, self).__init__(source="atlas://images/froggy_atlas/frog1", allow_stretch=True, pos=(randint(0, 400), 0))
@@ -37,7 +39,7 @@ class Frog(Sprite):
 
     def update(self, dt):
         if self.alive:
-            self.y += Window.height * dt * 1.68
+            self.y += Window.height * dt * (1.63 + FroggyApp.score//10/100)
             self.frame = self.frame + 1 if self.frame < 17 else 1
             src = self.atlas + str(int(self.frame/2))
             self.source = src
@@ -59,6 +61,8 @@ class Frog(Sprite):
             dead_animation.start(self)
             self.alive = False
             FroggyApp.score += 1
+            FroggyApp.total_frogs += 1
+            self.caught.play()
             return True
 
     def revive(self, *_):
@@ -68,11 +72,13 @@ class Frog(Sprite):
 
 
 class Ripple(Sprite):
+    splash = SoundLoader.load('sounds/splash.wav')
 
     def __init__(self, touch):
         super(Ripple, self).__init__(source="images/ripple.png", pos=touch.pos)
         self.size = (10, 10)
         self.animation = Animation(size=(150, 150), center=touch.pos, opacity=0, t='out_sine')
+        self.splash.play()
 
 
 class FroggyGame(Widget):
@@ -90,6 +96,7 @@ class FroggyGame(Widget):
             frog.update(dt)
         if FroggyApp.score >= 0:
             self.score_lbl.text = str(FroggyApp.score)
+            FroggyApp.max_score = max(FroggyApp.score, FroggyApp.max_score)
         else:
             self.score_lbl.txt = "X"
 
@@ -102,11 +109,18 @@ class FroggyGame(Widget):
 
 
 class FroggyScreen(Screen):
+    frog_music_loop = SoundLoader.load('sounds/16167__visual__industrial-wack8.wav')
+    frog_music_loop.loop = True
+    to_level_sfx = SoundLoader.load('sounds/going_up.wav')
     game_over = True
+
+    def on_pre_enter(self, *args):
+        FroggyScreen.to_level_sfx.play()
 
     def on_enter(self, *args):
         super(FroggyScreen, self).on_enter(*args)
         Clock.schedule_once(self.game_start, 0.2)
+        FroggyApp.music_loop.stop()
 
     def game_start(self, _):
         if self.game_over:
@@ -116,13 +130,15 @@ class FroggyScreen(Screen):
             self.game_over = False
             Clock.schedule_once(self.game.get_frogs, 1)
             Clock.schedule_interval(self.update, 1.0 / 60.0)
+            FroggyScreen.frog_music_loop.play()
 
     def update(self, dt):
         self.game.update(dt)
         if FroggyApp.score < 0:
-            self.manager.current = 'home'
+            self.manager.current = 'summary'
 
     def on_pre_leave(self, *args):
+        FroggyScreen.frog_music_loop.stop()
         if self.game:
             self.game.clear_widgets(children=self.game.frogs)
 
@@ -134,7 +150,27 @@ class FroggyScreen(Screen):
 
 
 class HomeScreen(Screen):
-    pass
+
+    def on_enter(self, *args):
+        FroggyApp.music_loop.play()
+
+    def on_pre_leave(self, *args):
+        FroggyApp.button_pop_wav.play()
+
+
+class SummaryScreen(Screen):
+
+    def on_pre_enter(self, *args):
+        self.ids.captured.text = "Total Captured: " + str(FroggyApp.total_frogs)
+        self.ids.max_score.text = "Max Score: " + str(FroggyApp.max_score)
+        FroggyApp.music_loop.play()
+
+    def on_pre_leave(self, *args):
+        FroggyApp.button_pop_wav.play()
+
+    def on_leave(self, *args):
+        FroggyApp.total_frogs = 0
+        FroggyApp.max_score = 0
 
 
 class FroggyApp(App):
@@ -142,11 +178,17 @@ class FroggyApp(App):
     Kivy base App class.
     """
     score = 0
+    total_frogs = 0
+    max_score = 0
+    music_loop = SoundLoader.load('sounds/170255__dublie__trumpet.wav')
+    music_loop.loop = True
+    button_pop_wav = SoundLoader.load('sounds/262301__boulderbuff64__tongue-click.wav')
 
     def build(self):
         root = ScreenManager(transition=WipeTransition(duration=1))
         root.add_widget(HomeScreen(name='home'))
         root.add_widget(FroggyScreen(name='froggy'))
+        root.add_widget(SummaryScreen(name='summary'))
         return root
 
 
