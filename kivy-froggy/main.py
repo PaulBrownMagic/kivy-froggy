@@ -13,6 +13,7 @@ from random import randint
 
 Builder.load_file('froggy.kv')
 
+
 class Sprite(Image):
     """
     Sprite: A base class for a sprite, which is an image with a position.
@@ -30,7 +31,9 @@ class Frog(Sprite):
     caught = SoundLoader.load('sounds/catch.wav')
 
     def __init__(self):
-        super(Frog, self).__init__(source="atlas://images/froggy_atlas/frog1", allow_stretch=True, pos=(randint(0, 400), 0))
+        super(Frog, self).__init__(source="atlas://images/froggy_atlas/frog1",
+                                   allow_stretch=True,
+                                   pos=(randint(0, 400), 0))
         self.place()
         self.frame = 1
         self.atlas = "atlas://images/froggy_atlas/frog"
@@ -113,6 +116,7 @@ class FroggyScreen(Screen):
     frog_music_loop.loop = True
     to_level_sfx = SoundLoader.load('sounds/going_up.wav')
     game_over = True
+    game = None
 
     def on_pre_enter(self, *args):
         FroggyScreen.to_level_sfx.play()
