@@ -9,6 +9,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.widget import Widget
 from kivy.utils import get_color_from_hex
 from random import randint
+from settingsjson import settings_json
 
 
 class FroggySounds:
@@ -31,8 +32,19 @@ class FroggySounds:
 
     @classmethod
     def stop(cls, sound):
-        if cls.is_sound_on:
+        if cls.music_library[sound].state == 'play' and cls.is_sound_on:
             cls.music_library[sound].stop()
+
+    @classmethod
+    def sound_settings(cls, key, value):
+        if key == 'sound_on':
+            if cls.is_sound_on:
+                for sound in cls.music_library:
+                    cls.stop(sound)
+                cls.is_sound_on = False
+            else:
+                cls.is_sound_on = True
+                cls.play('music_loop')
 
 
 class Sprite(Image):
@@ -209,10 +221,26 @@ class FroggyApp(App):
         root = FroggyScreenManager()
         return root
 
+    def build_config(self, config):
+        config.setdefaults('sound', {
+            'sound_on': True,
+        })
+
+    def build_settings(self, settings):
+        settings.add_json_panel('Music and SFX',
+                                self.config,
+                                data=settings_json)
+
+    def on_config_change(self, config, section, key, value):
+        if section == 'sound':
+            FroggySounds.sound_settings(key, value)
+
 
 if __name__ == "__main__":
     LabelBase.register(name='d-puntillas',
                        fn_regular='fonts/d-puntillas-B-to-tiptoe.ttf'
                        )
+    LabelBase.register(name='heydings',
+                       fn_regular='fonts/heydings_icons.ttf')
     Window.clearcolor = get_color_from_hex('#00BCD4')
     FroggyApp().run()

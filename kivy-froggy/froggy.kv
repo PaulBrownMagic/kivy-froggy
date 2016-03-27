@@ -1,5 +1,7 @@
 #:import C kivy.utils.get_color_from_hex
 #: import WipeTransition kivy.uix.screenmanager.WipeTransition
+#: import Window kivy.core.window.Window
+
 <FroggyScreenManager>:
     HomeScreen:
     SummaryScreen:
@@ -32,10 +34,18 @@
             size: self.size
     BoxLayout:
         orientation: 'vertical'
-        Sprite:
-            source:'images/FrogLilypad_1024x1024.png'
-            allow_stretch: True
+        BoxLayout:
             size_hint_y: 4
+            Sprite:
+                source:'images/FrogLilypad_1024x1024.png'
+                allow_stretch: True
+                size_hint_x: 1
+            FloatLayout:
+                size_hint_x: 0
+                SettingsButton:
+                    text: "C"
+                    pos: Window.width- self.width - 20, Window.height-self.height - 10
+                    on_press: app.open_settings()
         Button:
             text: 'Play Froggy!'
             size_hint_y: 1
@@ -49,7 +59,6 @@
         Rectangle:
             pos: self.pos
             size: self.size
-
     BoxLayout:
         orientation: 'vertical'
         TitleLabel:
@@ -63,6 +72,7 @@
             text: ""
         BoxLayout:
             size_hint_y: 1
+            spacing: '5dp'
             Button:
                 text: 'Play Again!'
                 on_release: root.manager.current = 'froggy'
@@ -85,3 +95,11 @@
     background_normal: 'images/button_normal.png'
     background_down: 'images/button_down.png'
     border: (0, 3, 2, 3)
+<SettingsButton@Button>:
+    font_name: 'heydings'
+    font_size: '85sp'
+    size_hint: None, None
+    size: '125dp','125dp'
+    background_normal: 'images/clear.png'
+    background_down: 'images/clear.png'
+    border: (1, 1, 1, 1)
