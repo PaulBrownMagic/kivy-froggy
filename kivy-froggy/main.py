@@ -11,8 +11,6 @@ from kivy.uix.widget import Widget
 from kivy.utils import get_color_from_hex
 from random import randint
 
-Builder.load_file('froggy.kv')
-
 
 class Sprite(Image):
     """
