@@ -39,7 +39,7 @@ class Frog(Sprite):
 
     def update(self, dt):
         if self.alive:
-            self.y += Window.height * dt * (1.63 + FroggyApp.score//10/100)
+            self.y += Window.height * dt * (1.6 + (FroggyApp.score//10)/10)
             self.frame = self.frame + 1 if self.frame < 17 else 1
             src = self.atlas + str(int(self.frame/2))
             self.source = src
@@ -161,7 +161,7 @@ class HomeScreen(Screen):
 class SummaryScreen(Screen):
 
     def on_pre_enter(self, *args):
-        self.ids.captured.text = "Total Captured: " + str(FroggyApp.total_frogs)
+        self.ids.captured.text = "Total Caught: " + str(FroggyApp.total_frogs)
         self.ids.max_score.text = "Max Score: " + str(FroggyApp.max_score)
         FroggyApp.music_loop.play()
 
