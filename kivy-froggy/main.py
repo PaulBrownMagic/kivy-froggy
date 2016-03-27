@@ -13,6 +13,9 @@ from settingsjson import settings_json
 
 
 class FroggySounds:
+    """
+    Namespace class for accessing sounds and applying settings
+    """
     is_sound_on = True
     music_library = {
         'splash': SoundLoader.load('sounds/splash.wav'),
@@ -107,6 +110,9 @@ class Frog(Sprite):
 
 
 class Ripple(Sprite):
+    """
+    Ripple inherits from Sprite, special effect placed when user misses frog to show touch.
+    """
 
     def __init__(self, touch):
         super(Ripple, self).__init__(source="images/ripple.png", pos=touch.pos)
@@ -116,6 +122,10 @@ class Ripple(Sprite):
 
 
 class FroggyGame(Widget):
+    """
+    Widget that contains most of the game play. Allows elements to be added/removed separately.
+    Gives more reliable positioning than the Screen class.
+    """
     frogs = []
 
     def get_frogs(self, _):
@@ -143,6 +153,9 @@ class FroggyGame(Widget):
 
 
 class FroggyScreen(Screen):
+    """
+    Screen to hold game and control game flow.
+    """
     game_over = True
     game = None
 
@@ -182,6 +195,9 @@ class FroggyScreen(Screen):
 
 
 class HomeScreen(Screen):
+    """
+    Home Screen with splash image, settings, and play button.
+    """
 
     def on_enter(self, *args):
         FroggySounds.play('music_loop')
@@ -191,6 +207,10 @@ class HomeScreen(Screen):
 
 
 class SummaryScreen(Screen):
+    """
+    Screen shown to player after the level. Shows game play stats. No buttons in
+    top majority to avoid click through in game play frenzy.
+    """
 
     def on_pre_enter(self, *args):
         self.ids.captured.text = "Total Caught: " + str(FroggyApp.total_frogs)
@@ -206,6 +226,9 @@ class SummaryScreen(Screen):
 
 
 class FroggyScreenManager(ScreenManager):
+    """
+    Holds all the screens and settings for transitions.
+    """
     pass
 
 
