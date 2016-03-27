@@ -64,6 +64,12 @@ class Frog(Sprite):
     """
     Frog inherits from Sprite. Animated game character.
     """
+    speeds = {
+        'Easy': 0.8,
+        'Medium': 1.1,
+        'Hard': 1.4,
+        'Impossible': 1.6
+    }
 
     def __init__(self):
         super(Frog, self).__init__(source="atlas://images/froggy_atlas/frog1",
@@ -77,7 +83,8 @@ class Frog(Sprite):
 
     def update(self, dt):
         if self.alive:
-            self.y += Window.height * dt * (1.6 + (FroggyApp.score//10)/10)
+            self.y += Window.height * dt * (self.speeds[FroggyGame.difficulty] +
+                                            (FroggyApp.score//10)/10)
             self.frame = self.frame + 1 if self.frame < 17 else 1
             src = self.atlas + str(int(self.frame/2))
             self.source = src
@@ -127,6 +134,7 @@ class FroggyGame(Widget):
     Gives more reliable positioning than the Screen class.
     """
     frogs = []
+    difficulty = 'Medium'
 
     def get_frogs(self, _):
         self.frogs = []
@@ -241,22 +249,28 @@ class FroggyApp(App):
     max_score = 0
 
     def build(self):
+        FroggyGame.difficulty = self.config.get('settings', 'difficulty')
+        FroggySounds.is_sound_on = self.config.getint('settings', 'sound_on') == 1
         root = FroggyScreenManager()
         return root
 
     def build_config(self, config):
-        config.setdefaults('sound', {
+        config.setdefaults('settings', {
             'sound_on': True,
-        })
+            'difficulty': 'Medium'
+                           })
 
     def build_settings(self, settings):
-        settings.add_json_panel('Music and SFX',
+        settings.add_json_panel('Froggit Settings',
                                 self.config,
                                 data=settings_json)
 
+
     def on_config_change(self, config, section, key, value):
-        if section == 'sound':
+        if key == 'sound_on':
             FroggySounds.sound_settings(key, value)
+        elif key == 'difficulty':
+            FroggyGame.difficulty = value
 
 
 if __name__ == "__main__":

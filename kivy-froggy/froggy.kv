@@ -46,8 +46,8 @@
                     text: "C"
                     pos: Window.width- self.width - 20, Window.height-self.height - 10
                     on_press: app.open_settings()
-        Button:
-            text: 'Play Froggy!'
+        FroggyButton:
+            text: 'Play Froggit 101!'
             size_hint_y: 1
             on_release: root.manager.current = 'froggy'
 
@@ -73,11 +73,11 @@
         BoxLayout:
             size_hint_y: 1
             spacing: '5dp'
-            Button:
+            FroggyButton:
                 text: 'Play Again!'
                 on_release: root.manager.current = 'froggy'
                 size_hint_x: 2
-            Button:
+            FroggyButton:
                 text: 'Home'
                 on_release: root.manager.current = 'home'
                 size_hint_x: 1
@@ -91,15 +91,19 @@
 <TitleLabel@Label>:
     font_size: '85sp'
 <Button>:
+    font_size: '35sp'
     background_color: C('#006064')
     background_normal: 'images/button_normal.png'
     background_down: 'images/button_down.png'
     border: (0, 3, 2, 3)
+<FroggyButton@Button>
+    font_size: '65sp'
 <SettingsButton@Button>:
     font_name: 'heydings'
-    font_size: '85sp'
+    font_size: '50sp'
     size_hint: None, None
     size: '125dp','125dp'
     background_normal: 'images/clear.png'
     background_down: 'images/clear.png'
     border: (1, 1, 1, 1)
+    color: C('#1f4508')
