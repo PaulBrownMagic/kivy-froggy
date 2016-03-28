@@ -40,8 +40,8 @@ class FroggySounds:
             cls.music_library[sound].stop()
 
     @classmethod
-    def sound_settings(cls):
-        if cls.is_sound_on:
+    def sound_settings(cls, value):
+        if int(value) == 0 and cls.is_sound_on:
             for sound in cls.music_library:
                 cls.stop(sound)
             cls.is_sound_on = False
@@ -70,6 +70,7 @@ class Frog(Sprite):
         'Hard': 1.3,
         'Impossible': 1.6
     }
+    frog_size = ('116dp', '174dp')
 
     def __init__(self):
         super(Frog, self).__init__(source="atlas://images/froggy_atlas/frog1",
@@ -79,29 +80,30 @@ class Frog(Sprite):
         self.frame = 1
         self.atlas = "atlas://images/froggy_atlas/frog"
         self.alive = True
-        self.size = ('116dp', '174dp')
+        self.size = self.frog_size
 
     def update(self, dt):
         if self.alive:
-            speed = Window.height * (self.speeds[FroggyGame.difficulty] + FroggyApp.score // 5 / 40)
+            speed = Window.height * (self.speeds[FroggyGame.difficulty] +
+                                     FroggyApp.score // 5 / 40)
             self.y += speed * dt
             self.frame = self.frame + 1 if self.frame < 17 else 1
-            src = self.atlas + str(int(self.frame/2))
-            self.source = src
+            self.source = self.atlas + str(self.frame//2)
             if self.y > Window.size[1]:
                 self.place()
                 FroggyApp.score -= 1
         else:
-            src = self.atlas + "_dead"
-            self.source = src
+            self.source = self.atlas + "_dead"
 
     def place(self):
         self.x = randint(0, Window.size[0] - self.size[0])
-        self.y = randint(Window.size[1] * -1, self.size[1] * -1)
+        self.y = randint(-Window.size[1], -self.size[1])
 
     def on_touch_down(self, touch):
         if self.collide_point(*touch.pos) and self.alive:
-            dead_animation = Animation(size=(0, 0), center=touch.pos, t='in_quint')
+            dead_animation = Animation(size=(0, 0),
+                                       center=touch.pos,
+                                       t='in_quint')
             dead_animation.bind(on_complete=self.revive)
             dead_animation.start(self)
             self.alive = False
@@ -109,9 +111,11 @@ class Frog(Sprite):
             FroggyApp.total_frogs += 1
             FroggySounds.play('frog_caught')
             return True
+        else:
+            return False
 
     def revive(self, *_):
-        self.size = ('116dp', '174dp')
+        self.size = self.frog_size
         self.alive = True
         self.place()
 
@@ -167,44 +171,35 @@ class FroggyScreen(Screen):
     """
     Screen to hold game and control game flow.
     """
-    game_over = True
     game = None
 
     def on_pre_enter(self, *args):
         FroggySounds.play('to_level_sfx')
 
     def on_enter(self, *args):
-        super(FroggyScreen, self).on_enter(*args)
         Clock.schedule_once(self.game_start, 0.2)
         FroggySounds.stop('music_loop')
 
     def game_start(self, _):
-        if self.game_over:
-            FroggyApp.score = 0
-            self.game = FroggyGame()
-            self.add_widget(self.game)
-            self.game_over = False
-            Clock.schedule_once(self.game.get_frogs, 1)
-            Clock.schedule_interval(self.update, 1.0 / 60.0)
-            FroggySounds.play('frog_music_loop')
+        FroggyApp.score = 0
+        self.game = FroggyGame()
+        self.add_widget(self.game)
+        Clock.schedule_once(self.game.get_frogs, 1)
+        Clock.schedule_interval(self.update, 1.0 / 60.0)
+        FroggySounds.play('frog_music_loop')
 
     def update(self, dt):
         self.game.update(dt)
-        if FroggyApp.score < 0:
-            self.manager.current = 'summary'
-        elif FroggyApp.score >= 101:
+        if FroggyApp.score < 0 or FroggyApp.score >= 101:
             self.manager.current = 'summary'
 
     def on_pre_leave(self, *args):
         FroggySounds.stop('frog_music_loop')
-        if self.game:
-            self.game.clear_widgets(children=self.game.frogs)
+        self.game.clear_widgets(children=self.game.frogs)
 
     def on_leave(self, *args):
-        self.game_over = True
-        if self.game:
-            self.game.clear_widgets()
-            Clock.unschedule(self.update)
+        self.game.clear_widgets()
+        Clock.unschedule(self.update)
         self.clear_widgets()
 
 
@@ -234,7 +229,6 @@ class SummaryScreen(Screen):
             self.ids.title.text = "Game OVER!"
             self.ids.max_score.text = "Max SCORE: " + str(FroggyApp.max_score)
         self.ids.captured.text = "Total FROGS: " + str(FroggyApp.total_frogs)
-
         FroggySounds.play('music_loop')
 
     def on_pre_leave(self, *args):
@@ -280,15 +274,14 @@ class FroggyApp(App):
 
     def on_config_change(self, config, section, key, value):
         if key == 'sound_on':
-            FroggySounds.sound_settings()
+            FroggySounds.sound_settings(value)
         elif key == 'difficulty':
             FroggyGame.difficulty = value
 
 
 if __name__ == "__main__":
     LabelBase.register(name='d-puntillas',
-                       fn_regular='fonts/d-puntillas-B-to-tiptoe.ttf'
-                       )
+                       fn_regular='fonts/d-puntillas-B-to-tiptoe.ttf')
     LabelBase.register(name='heydings',
                        fn_regular='fonts/heydings_icons.ttf')
     Window.clearcolor = get_color_from_hex('#00BCD4')
