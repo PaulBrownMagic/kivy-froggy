@@ -1,0 +1,3 @@
+title=Froggit
+author=Paul Brown
+orientation=landscape
