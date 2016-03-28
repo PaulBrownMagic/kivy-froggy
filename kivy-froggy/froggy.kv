@@ -47,7 +47,7 @@
                     pos: Window.width- self.width - 20, Window.height-self.height - 10
                     on_press: app.open_settings()
         FroggyButton:
-            text: 'Play Froggit 101!'
+            text: 'Play FROGGIT-101'
             size_hint_y: 1
             on_release: root.manager.current = 'froggy'
 
@@ -62,7 +62,8 @@
     BoxLayout:
         orientation: 'vertical'
         TitleLabel:
-            text:"Game OVER!"
+            id: title
+            text:""
             size_hint_y: 2
         Label:
             id: captured
@@ -74,7 +75,7 @@
             size_hint_y: 1
             spacing: '5dp'
             FroggyButton:
-                text: 'Play Again!'
+                text: 'Play AGAIN'
                 on_release: root.manager.current = 'froggy'
                 size_hint_x: 2
             FroggyButton:

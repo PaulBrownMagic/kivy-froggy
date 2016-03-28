@@ -1,3 +1,4 @@
+from __future__ import division
 from kivy.app import App
 from kivy.animation import Animation
 from kivy.clock import Clock
@@ -39,15 +40,14 @@ class FroggySounds:
             cls.music_library[sound].stop()
 
     @classmethod
-    def sound_settings(cls, key, value):
-        if key == 'sound_on':
-            if cls.is_sound_on:
-                for sound in cls.music_library:
-                    cls.stop(sound)
-                cls.is_sound_on = False
-            else:
-                cls.is_sound_on = True
-                cls.play('music_loop')
+    def sound_settings(cls):
+        if cls.is_sound_on:
+            for sound in cls.music_library:
+                cls.stop(sound)
+            cls.is_sound_on = False
+        else:
+            cls.is_sound_on = True
+            cls.play('music_loop')
 
 
 class Sprite(Image):
@@ -65,9 +65,9 @@ class Frog(Sprite):
     Frog inherits from Sprite. Animated game character.
     """
     speeds = {
-        'Easy': 0.8,
-        'Medium': 1.1,
-        'Hard': 1.4,
+        'Easy': 0.6,
+        'Medium': 1.0,
+        'Hard': 1.3,
         'Impossible': 1.6
     }
 
@@ -83,8 +83,8 @@ class Frog(Sprite):
 
     def update(self, dt):
         if self.alive:
-            self.y += Window.height * dt * (self.speeds[FroggyGame.difficulty] +
-                                            (FroggyApp.score//10)/10)
+            speed = Window.height * (self.speeds[FroggyGame.difficulty] + FroggyApp.score // 5 / 40)
+            self.y += speed * dt
             self.frame = self.frame + 1 if self.frame < 17 else 1
             src = self.atlas + str(int(self.frame/2))
             self.source = src
@@ -123,8 +123,11 @@ class Ripple(Sprite):
 
     def __init__(self, touch):
         super(Ripple, self).__init__(source="images/ripple.png", pos=touch.pos)
-        self.size = (10, 10)
-        self.animation = Animation(size=(150, 150), center=touch.pos, opacity=0, t='out_sine')
+        self.size = (50, 50)
+        self.animation = Animation(size=(300, 300),
+                                   center=touch.pos,
+                                   opacity=0,
+                                   t='out_sine')
         FroggySounds.play('splash')
 
 
@@ -189,6 +192,8 @@ class FroggyScreen(Screen):
         self.game.update(dt)
         if FroggyApp.score < 0:
             self.manager.current = 'summary'
+        elif FroggyApp.score >= 101:
+            self.manager.current = 'summary'
 
     def on_pre_leave(self, *args):
         FroggySounds.stop('frog_music_loop')
@@ -200,6 +205,7 @@ class FroggyScreen(Screen):
         if self.game:
             self.game.clear_widgets()
             Clock.unschedule(self.update)
+        self.clear_widgets()
 
 
 class HomeScreen(Screen):
@@ -221,8 +227,14 @@ class SummaryScreen(Screen):
     """
 
     def on_pre_enter(self, *args):
-        self.ids.captured.text = "Total Caught: " + str(FroggyApp.total_frogs)
-        self.ids.max_score.text = "Max Score: " + str(FroggyApp.max_score)
+        if FroggyApp.score >= 101:
+            self.ids.title.text = "Well DONE!"
+            self.ids.max_score.text = "Your TIME: " + str(FroggyApp.max_score)
+        else:
+            self.ids.title.text = "Game OVER!"
+            self.ids.max_score.text = "Max SCORE: " + str(FroggyApp.max_score)
+        self.ids.captured.text = "Total FROGS: " + str(FroggyApp.total_frogs)
+
         FroggySounds.play('music_loop')
 
     def on_pre_leave(self, *args):
@@ -249,14 +261,15 @@ class FroggyApp(App):
     max_score = 0
 
     def build(self):
-        FroggyGame.difficulty = self.config.get('settings', 'difficulty')
-        FroggySounds.is_sound_on = self.config.getint('settings', 'sound_on') == 1
+        if self.config:
+            FroggyGame.difficulty = self.config.get('settings', 'difficulty')
+            FroggySounds.is_sound_on = self.config.getint('settings', 'sound_on') == 1
         root = FroggyScreenManager()
         return root
 
     def build_config(self, config):
         config.setdefaults('settings', {
-            'sound_on': True,
+            'sound_on': 1,
             'difficulty': 'Medium'
                            })
 
@@ -265,10 +278,9 @@ class FroggyApp(App):
                                 self.config,
                                 data=settings_json)
 
-
     def on_config_change(self, config, section, key, value):
         if key == 'sound_on':
-            FroggySounds.sound_settings(key, value)
+            FroggySounds.sound_settings()
         elif key == 'difficulty':
             FroggyGame.difficulty = value
 
