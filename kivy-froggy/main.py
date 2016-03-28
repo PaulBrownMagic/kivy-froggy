@@ -67,10 +67,10 @@ class Frog(Sprite):
     Frog inherits from Sprite. Animated game character.
     """
     speeds = {
-        'Easy': 0.6,
-        'Medium': 1.0,
-        'Hard': 1.3,
-        'Impossible': 1.6
+        'Easy': 0.7,
+        'Medium': 1.1,
+        'Hard': 1.4,
+        'Impossible': 1.7
     }
     frog_size = ('116dp', '174dp')
 
@@ -83,12 +83,12 @@ class Frog(Sprite):
         self.atlas = "atlas://images/froggy_atlas/frog"
         self.alive = True
         self.size = self.frog_size
+        self.speed = self.get_speed()
 
     def update(self, dt):
         if self.alive:
-            speed = Window.height * (self.speeds[FroggyGame.difficulty] +
-                                     FroggyApp.score // 5 / 40)
-            self.y += speed * dt
+            self.speed = max(self.speed, self.get_speed())
+            self.y += self.speed * dt
             self.frame = self.frame + 1 if self.frame < 17 else 1
             self.source = self.atlas + str(self.frame//2)
             if self.y > Window.size[1]:
@@ -115,6 +115,9 @@ class Frog(Sprite):
             return True
         else:
             return False
+
+    def get_speed(self):
+        return Window.height * (self.speeds[FroggyGame.difficulty] + FroggyApp.score // 5 / 40)
 
     def revive(self, *_):
         self.size = self.frog_size
@@ -245,7 +248,16 @@ class FroggyScreenManager(ScreenManager):
     """
     Holds all the screens and settings for transitions.
     """
-    pass
+    def key_press_handler(self, window, key, *_):
+        if key == 27:
+            if self.current == 'home':
+                return False
+            elif self.current == 'froggy':
+                self.current = 'summary'
+                return True
+            else:
+                self.current = 'home'
+                return True
 
 
 class FroggyApp(App):
@@ -261,6 +273,7 @@ class FroggyApp(App):
             FroggyGame.difficulty = self.config.get('settings', 'difficulty')
             FroggySounds.is_sound_on = self.config.getint('settings', 'sound_on') == 1
         root = FroggyScreenManager()
+        Window.bind(on_keyboard=root.key_press_handler)
         return root
 
     def build_config(self, config):

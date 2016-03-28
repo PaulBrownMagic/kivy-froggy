@@ -34,22 +34,23 @@
             size: self.size
     BoxLayout:
         orientation: 'vertical'
-        BoxLayout:
+        Sprite:
             size_hint_y: 4
-            Sprite:
-                source:'images/FrogLilypad_1024x1024.png'
-                allow_stretch: True
-                size_hint_x: 1
-            FloatLayout:
-                size_hint_x: 0
-                SettingsButton:
-                    text: "C"
-                    pos: Window.width- self.width - 20, Window.height-self.height - 10
-                    on_press: app.open_settings()
-        FroggyButton:
-            text: 'Play Froggit 101'
+            source:'images/FrogLilypad_1024x1024.png'
+            allow_stretch: True
+            size_hint_x: 1
+        BoxLayout:
             size_hint_y: 1
-            on_release: root.manager.current = 'froggy'
+            SettingsButton:
+                size_hint_x: 1
+                text: "C"
+                pos: Window.width- self.width - 20, Window.height-self.height - 10
+                on_press: app.open_settings()
+            FroggyButton:
+                size_hint_x: 11
+                text: 'Play Froggit 101'
+
+                on_release: root.manager.current = 'froggy'
 
 <SummaryScreen>:
     name: 'summary'
@@ -102,9 +103,4 @@
 <SettingsButton@Button>:
     font_name: 'heydings'
     font_size: '50sp'
-    size_hint: None, None
-    size: '125dp','125dp'
-    background_normal: 'images/clear.png'
-    background_down: 'images/clear.png'
-    border: (1, 1, 1, 1)
-    color: C('#1f4508')
+
