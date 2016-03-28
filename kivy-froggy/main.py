@@ -12,6 +12,8 @@ from kivy.utils import get_color_from_hex
 from random import randint
 from settingsjson import settings_json
 
+__version__ = "1.0"
+__author__ = "Paul Brown"
 
 class FroggySounds:
     """
