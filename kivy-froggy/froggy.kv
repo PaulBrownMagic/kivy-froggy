@@ -6,6 +6,7 @@
     HomeScreen:
     SummaryScreen:
     FroggyScreen:
+    TopScoresScreen:
 
 
 <FroggyScreen>:
@@ -43,14 +44,18 @@
             size_hint_y: 1
             SettingsButton:
                 size_hint_x: 1
-                text: "C"
+                text: 'x'
                 pos: Window.width- self.width - 20, Window.height-self.height - 10
                 on_press: app.open_settings()
             FroggyButton:
-                size_hint_x: 11
-                text: 'Play Froggit 101'
-
+                size_hint_x: 8
+                text: 'Froggit 101'
                 on_release: root.manager.current = 'froggy'
+            SettingsButton:
+                size_hint_x: 1
+                text: "z"
+                pos: Window.width- self.width - 20, Window.height-self.height - 10
+                on_press: root.manager.current = 'top_scores'
 
 <SummaryScreen>:
     name: 'summary'
@@ -83,7 +88,30 @@
                 text: 'Home'
                 on_release: root.manager.current = 'home'
                 size_hint_x: 1
-
+<TopScoresScreen>:
+    canvas.before:
+        Color:
+            rgba: C('#004A4D44')
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    name: 'top_scores'
+    easy: Easy
+    medium: Medium
+    hard: Hard
+    impossible: Impossible
+    BoxLayout:
+        orientation: 'vertical'
+        TitleLabel:
+            text: "Top SCORES"
+        Label:
+            id: Easy
+        Label:
+            id: Medium
+        Label:
+            id: Hard
+        Label:
+            id: Impossible
 
 <Label>:
     font_size: '55sp'

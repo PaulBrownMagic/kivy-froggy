@@ -5,6 +5,7 @@ from kivy.clock import Clock
 from kivy.core.audio import SoundLoader
 from kivy.core.text import LabelBase
 from kivy.core.window import Window
+from kivy.storage.jsonstore import JsonStore
 from kivy.uix.image import Image
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.widget import Widget
@@ -14,6 +15,7 @@ from settingsjson import settings_json
 
 __version__ = "1.0"
 __author__ = "Paul Brown"
+
 
 class FroggySounds:
     """
@@ -147,6 +149,14 @@ class FroggyGame(Widget):
     """
     frogs = []
     difficulty = 'Medium'
+    score_animation = Animation(center_x=Window.width/2 - 10,
+                                color=get_color_from_hex('#B2FF59'),
+                                d=0.1, t='in_out_bounce') + \
+                      Animation(center_x=Window.width/2 + 10,
+                                color=get_color_from_hex('#64DD17'),
+                                d=0.1, t='in_out_bounce')
+    score_animation.repeat = True
+    is_score_animation = True
 
     def get_frogs(self, _):
         self.frogs = []
@@ -163,6 +173,19 @@ class FroggyGame(Widget):
             FroggyApp.max_score = max(FroggyApp.score, FroggyApp.max_score)
         else:
             self.score_lbl.txt = "X"
+        if FroggyApp.score == 101:
+            self.animate_score()
+
+    def animate_score(self):
+        if self.is_score_animation:
+            self.score_animation.start(self.score_lbl)
+            self.is_score_animation = False
+            Clock.schedule_once(self.stop_animation, 1)
+
+    def stop_animation(self, _):
+        Animation.cancel_all(self.score_lbl)
+        self.score_lbl.center_x = Window.width/2
+        self.score_lbl.color = get_color_from_hex('#64DD17')
 
     def on_touch_down(self, touch):
         if Widget.on_touch_down(self, touch):
@@ -195,7 +218,8 @@ class FroggyScreen(Screen):
 
     def update(self, dt):
         self.game.update(dt)
-        if FroggyApp.score < 0 or FroggyApp.score >= 101:
+        if FroggyApp.score < 0 or (FroggyApp.score >= 61 and
+                                    FroggyApp.max_score - FroggyApp.score > 40):
             self.manager.current = 'summary'
 
     def on_pre_leave(self, *args):
@@ -206,6 +230,7 @@ class FroggyScreen(Screen):
         self.game.clear_widgets()
         Clock.unschedule(self.update)
         self.clear_widgets()
+        FroggyApp.store_scores()
 
 
 class HomeScreen(Screen):
@@ -229,10 +254,9 @@ class SummaryScreen(Screen):
     def on_pre_enter(self, *args):
         if FroggyApp.score >= 101:
             self.ids.title.text = "Well DONE!"
-            self.ids.max_score.text = "Your TIME: " + str(FroggyApp.max_score)
         else:
             self.ids.title.text = "Game OVER!"
-            self.ids.max_score.text = "Max SCORE: " + str(FroggyApp.max_score)
+        self.ids.max_score.text = "Max SCORE: " + str(FroggyApp.max_score)
         self.ids.captured.text = "Total FROGS: " + str(FroggyApp.total_frogs)
         FroggySounds.play('music_loop')
 
@@ -242,6 +266,23 @@ class SummaryScreen(Screen):
     def on_leave(self, *args):
         FroggyApp.total_frogs = 0
         FroggyApp.max_score = 0
+
+
+class TopScoresScreen(Screen):
+
+    def on_pre_enter(self, *args):
+        difficulty_labels = {
+            'Easy': self.easy,
+            'Medium': self.medium,
+            'Hard': self.hard,
+            'Impossible': self.impossible
+        }
+        for difficulty in difficulty_labels:
+            if FroggyApp.store.exists(difficulty):
+                score = FroggyApp.store.get(difficulty)['top_score']
+                difficulty_labels[difficulty].text = difficulty + ": " + str(score)
+            else:
+                difficulty_labels[difficulty].text = difficulty + ": 0"
 
 
 class FroggyScreenManager(ScreenManager):
@@ -267,6 +308,7 @@ class FroggyApp(App):
     score = 0
     total_frogs = 0
     max_score = 0
+    store = JsonStore("top_froggits.json")
 
     def build(self):
         if self.config:
@@ -293,11 +335,22 @@ class FroggyApp(App):
         elif key == 'difficulty':
             FroggyGame.difficulty = value
 
+    @classmethod
+    def store_scores(cls):
+        difficulty = FroggyGame.difficulty
+        max_score = cls.max_score
+        if cls.store.exists(difficulty):
+            top_max_score = cls.store.get(difficulty)['top_score']
+        else:
+            top_max_score = 0
+        if max_score > top_max_score:
+            cls.store.put(difficulty, top_score=max_score)
+
 
 if __name__ == "__main__":
     LabelBase.register(name='d-puntillas',
                        fn_regular='fonts/d-puntillas-B-to-tiptoe.ttf')
     LabelBase.register(name='heydings',
-                       fn_regular='fonts/heydings_icons.ttf')
+                       fn_regular='fonts/HeydingsIcons.ttf')
     Window.clearcolor = get_color_from_hex('#00BCD4')
     FroggyApp().run()
